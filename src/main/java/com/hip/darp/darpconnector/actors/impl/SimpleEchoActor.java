@@ -9,11 +9,10 @@ import io.dapr.utils.TypeRef;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import static java.time.Duration.ofSeconds;
 
@@ -21,10 +20,15 @@ import static java.time.Duration.ofSeconds;
 public class SimpleEchoActor extends AbstractActor implements SimpleActor, Remindable<Integer> {
 
     /**
-     * Format to output date and time.
+     * Time zone ID for UTC/GMT.
      */
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     public static final String GMT = "GMT";
+    /**
+     * Thread-safe formatter to output date and time.
+     */
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+            .withZone(ZoneId.of(GMT));
 
     protected SimpleEchoActor(ActorRuntimeContext runtimeContext, ActorId id) {
         super(runtimeContext, id);
@@ -64,8 +68,7 @@ public class SimpleEchoActor extends AbstractActor implements SimpleActor, Remin
      */
     @Override
     public String say(String something) {
-        Calendar utcNow = Calendar.getInstance(TimeZone.getTimeZone(GMT));
-        String utcNowAsString = DATE_FORMAT.format(utcNow.getTime());
+        String utcNowAsString = DATE_TIME_FORMAT.format(Instant.now());
 
         // Handles the request by printing message.
         log.info("Server say method for actor "
@@ -109,8 +112,7 @@ public class SimpleEchoActor extends AbstractActor implements SimpleActor, Remin
      */
     @Override
     public void clock(String message) {
-        Calendar utcNow = Calendar.getInstance(TimeZone.getTimeZone(GMT));
-        String utcNowAsString = DATE_FORMAT.format(utcNow.getTime());
+        String utcNowAsString = DATE_TIME_FORMAT.format(Instant.now());
 
         // Handles the request by printing message.
         log.info("Server timer triggered with state "
@@ -138,8 +140,7 @@ public class SimpleEchoActor extends AbstractActor implements SimpleActor, Remin
     @Override
     public Mono<Void> receiveReminder(String reminderName, Integer state, Duration dueTime, Duration period) {
         return Mono.fromRunnable(() -> {
-            Calendar utcNow = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-            String utcNowAsString = DATE_FORMAT.format(utcNow.getTime());
+            String utcNowAsString = DATE_TIME_FORMAT.format(Instant.now());
 
             String message = String.format("Reminder %s with state {%d} triggered for actor %s @ %s",
                     reminderName, state, this.getId(), utcNowAsString);

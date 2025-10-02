@@ -26,8 +26,7 @@ public class EchoActorClient {
 
             // Invoke the 'say' method in actor.
             String result = actor.say(message);
-            log.info("Reply %s received from actor at index %d with ID %s ", result,
-                    index, actorId);
+            log.info("Reply {} received from actor at index {} with ID {}", result, index, actorId);
 
             try {
                 // Waits for up to 1 second.
